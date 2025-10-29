@@ -1,44 +1,35 @@
 return {
 	{
-		"gbprod/nord.nvim",
+		"webhooked/kanso.nvim",
 		lazy = false,
 		priority = 1000,
 		config = function()
-			require("nord").setup({})
-			-- vim.cmd.colorscheme("nord")
-		end,
-	},
-	{
-		"rebelot/kanagawa.nvim",
-		lazy = false,
-		priority = 1000,
-		config = function()
-			require("kanagawa").setup({
+			require("kanso").setup({
+				bold = true,
+				italics = true,
+				compile = false,
+				undercurl = true,
+				commentStyle = { italic = true },
+				functionStyle = {},
+				keywordStyle = { italic = true },
+				statementStyle = {},
+				typeStyle = {},
 				transparent = true,
-				colors = {
-					palette = {
-						fujiWhite = "#d8dee9",
-					},
-					theme = {
-						all = {
-							ui = {
-								bg_gutter = "none",
-								float = {
-									bg = "none",
-								},
-							},
-						},
-					},
+				terminalColors = true,
+				background = {
+					dark = "ink",
+					light = "ink",
 				},
+				foreground = "saturated",
 				overrides = function()
 					return {
-						TelescopePromptBorder = { fg = "#d8dee9" },
-						TelescopeResultsBorder = { fg = "#d8dee9" },
-						TelescopePreviewBorder = { fg = "#d8dee9" },
+						TelescopePromptBorder = { fg = "#C5C9C7" },
+						TelescopeResultsBorder = { fg = "#C5C9C7" },
 					}
 				end,
 			})
-			vim.cmd.colorscheme("kanagawa")
+
+			vim.cmd.colorscheme("kanso")
 		end,
 	},
 }

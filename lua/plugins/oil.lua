@@ -26,8 +26,7 @@ return {
 		})
 
 		vim.keymap.set("n", "ef", ":lua require('oil').toggle_float()<CR>", { desc = "Telescope find files" })
-
-		vim.api.nvim_set_hl(0, "OilFloatBorder", { fg = "#d8dee9", bg = "#2e3440" })
-		vim.api.nvim_set_hl(0, "OilFloatTitle", { fg = "#88c0d0", bg = "#2e3440", bold = true })
+		vim.api.nvim_set_hl(0, "OilFloatBorder", { fg = "#C5C9C7", bg = "#14171d" })
+		vim.api.nvim_set_hl(0, "OilFloatTitle", { fg = "#8ba4b0", bg = "#14171d", bold = true })
 	end,
 }
