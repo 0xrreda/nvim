@@ -4,15 +4,8 @@ return {
 	dependencies = {
 		"hrsh7th/cmp-nvim-lsp",
 		{ "antosha417/nvim-lsp-file-operations", config = true },
-		{ "folke/neodev.nvim", opts = {} },
 	},
 	config = function()
-		-- import lspconfig plugin
-		local lspconfig = require("lspconfig")
-
-		-- import mason_lspconfig plugin
-		local mason_lspconfig = require("mason-lspconfig")
-
 		-- import cmp-nvim-lsp plugin
 		local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
@@ -67,71 +60,78 @@ return {
 			end,
 		})
 
-		-- used to enable autocompletion (assign to every lsp server config)
-		local capabilities = cmp_nvim_lsp.default_capabilities()
+		-- inline diagnostic text, shown to the right of the offending line
+		local virtual_text = {
+			spacing = 4,
+			prefix = "●",
+			source = "if_many",
+		}
 
-		-- Change the Diagnostic symbols in the sign column (gutter)
-		-- (not in youtube nvim video)
-		local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-		for type, icon in pairs(signs) do
-			local hl = "DiagnosticSign" .. type
-			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-		end
-
-		mason_lspconfig.setup_handlers({
-			-- default handler for installed servers
-			function(server_name)
-				lspconfig[server_name].setup({
-					capabilities = capabilities,
-				})
-			end,
-			["ts_ls"] = function()
-				lspconfig["ts_ls"].setup({
-					capabilities = capabilities,
-					init_options = {
-						plugins = {
-							{
-								name = "@vue/typescript-plugin",
-								location = "/node_modules/@vue/language-server",
-								languages = { "vue" },
-							},
-						},
-					},
-				})
-			end,
-			["volar"] = function()
-				lspconfig["volar"].setup({
-					init_options = {
-						vue = {
-							hybridMode = false,
-						},
-					},
-				})
-			end,
-			["emmet_ls"] = function()
-				-- configure emmet language server
-				lspconfig["emmet_ls"].setup({
-					capabilities = capabilities,
-					filetypes = { "html", "css", "sass", "scss", "less", "vue" },
-				})
-			end,
-			["lua_ls"] = function()
-				-- configure lua server (with special settings)
-				lspconfig["lua_ls"].setup({
-					capabilities = capabilities,
-					settings = {
-						Lua = {
-							-- make the language server recognize "vim" global
-							diagnostics = {
-								globals = { "vim" },
-							},
-							completion = {
-								callSnippet = "Replace",
-							},
-						},
-					},
-				})
-			end,
+		vim.diagnostic.config({
+			virtual_text = virtual_text,
+			severity_sort = true,
+			underline = true,
+			float = {
+				border = "rounded",
+				source = true,
+			},
+			-- Change the Diagnostic symbols in the sign column (gutter)
+			signs = {
+				text = {
+					[vim.diagnostic.severity.ERROR] = " ",
+					[vim.diagnostic.severity.WARN] = " ",
+					[vim.diagnostic.severity.HINT] = "󰠠 ",
+					[vim.diagnostic.severity.INFO] = " ",
+				},
+			},
 		})
+
+		-- toggle the inline text off when it gets in the way (trouble, <leader>xw,
+		-- still lists everything either way)
+		keymap.set("n", "<leader>dv", function()
+			local shown = vim.diagnostic.config().virtual_text ~= false
+			vim.diagnostic.config({ virtual_text = not shown and virtual_text or false })
+			vim.notify("diagnostic virtual text " .. (shown and "off" or "on"))
+		end, { desc = "Toggle inline diagnostics" })
+
+		-- used to enable autocompletion (assign to every lsp server config)
+		vim.lsp.config("*", {
+			capabilities = cmp_nvim_lsp.default_capabilities(),
+		})
+
+		vim.lsp.config("ts_ls", {
+			init_options = {
+				plugins = {
+					{
+						name = "@vue/typescript-plugin",
+						location = "/node_modules/@vue/language-server",
+						languages = { "vue" },
+					},
+				},
+			},
+		})
+
+		-- configure emmet language server
+		vim.lsp.config("emmet_ls", {
+			filetypes = { "html", "css", "sass", "scss", "less", "vue" },
+		})
+
+		-- configure lua server (with special settings)
+		vim.lsp.config("lua_ls", {
+			settings = {
+				Lua = {
+					-- make the language server recognize "vim" global
+					diagnostics = {
+						globals = { "vim" },
+					},
+					completion = {
+						callSnippet = "Replace",
+					},
+				},
+			},
+		})
+
+		-- servers installed through mason are enabled automatically by
+		-- mason-lspconfig v2 (automatic_enable), picking up the configs above
 	end,
 }

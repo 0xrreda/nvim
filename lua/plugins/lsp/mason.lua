@@ -31,9 +31,13 @@ return {
 				"cssls",
 				"emmet_ls",
 				"ts_ls",
-				"volar",
 				"tailwindcss",
 				"clangd",
+			},
+			-- stylua is installed as a formatter (see conform), not as a language
+			-- server, so keep mason-lspconfig from auto-enabling it
+			automatic_enable = {
+				exclude = { "stylua" },
 			},
 		})
 

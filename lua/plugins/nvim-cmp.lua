@@ -29,6 +29,21 @@ return {
 			completion = {
 				completeopt = "menu,menuone,preview,noselect",
 			},
+			window = {
+				completion = cmp.config.window.bordered({
+					border = "rounded",
+					-- NormalFloat so the menu keeps a solid background against the
+					-- transparent buffer, PmenuSel to mark the selected row
+					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+					scrollbar = true,
+					col_offset = -3, -- line the icon column up with the text in the buffer
+					side_padding = 1,
+				}),
+				documentation = cmp.config.window.bordered({
+					border = "rounded",
+					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,Search:None",
+				}),
+			},
 			snippet = { -- configure how nvim-cmp interacts with snippet engine
 				expand = function(args)
 					luasnip.lsp_expand(args.body)
@@ -45,6 +60,8 @@ return {
 			}),
 			-- sources for autocompletion
 			sources = cmp.config.sources({
+				-- lazydev completions for the neovim lua api, skips the lsp source
+				{ name = "lazydev", group_index = 0 },
 				{ name = "nvim_lsp" },
 				{ name = "luasnip" }, -- snippets
 				{ name = "buffer" }, -- text within current buffer
@@ -53,11 +70,30 @@ return {
 
 			-- configure lspkind for vs-code like pictograms in completion menu
 			formatting = {
-				format = lspkind.cmp_format({
-					maxwidth = 50,
-					ellipsis_char = "...",
-				}),
+				-- three columns: the pictogram, the item itself, then the kind name
+				fields = { "kind", "abbr", "menu" },
+				format = function(_, item)
+					-- cmp keeps its own CompletionItemKind table, so lspkind.init()
+					-- never reaches it: look the pictogram up by hand instead
+					local icon = lspkind.symbolic(item.kind) or ""
+
+					if vim.fn.strchars(item.abbr) > 50 then
+						item.abbr = vim.fn.strcharpart(item.abbr, 0, 50) .. "…"
+					end
+
+					item.menu = "  " .. item.kind
+					item.kind = " " .. icon .. " "
+
+					return item
+				end,
+			},
+			-- shows the selected completion inline as you scroll the menu
+			experimental = {
+				ghost_text = { hl_group = "CmpGhostText" },
 			},
 		})
+
+		-- dim the inline preview so it reads as a suggestion, not as real text
+		vim.api.nvim_set_hl(0, "CmpGhostText", { link = "Comment", default = true })
 	end,
 }

@@ -1,7 +1,9 @@
 return {
 	{
 		"nvim-telescope/telescope.nvim",
-		tag = "0.1.8",
+		-- master, not the 0.1.8 tag: that tag predates neovim 0.11 and its lsp
+		-- builtins use deprecated apis (make_position_params/supports_method)
+		branch = "master",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		config = function()
 			local builtin = require("telescope.builtin")
