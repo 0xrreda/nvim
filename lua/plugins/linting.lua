@@ -1,28 +1,37 @@
 return {
-	"mfussenegger/nvim-lint",
-	event = { "BufReadPre", "BufNewFile" },
-	config = function()
-		local lint = require("lint")
+    "stevearc/conform.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+        local conform = require("conform")
 
-		lint.linters_by_ft = {
-			javascript = { "eslint_d" },
-			typescript = { "eslint_d" },
-			javascriptreact = { "eslint_d" },
-			typescriptreact = { "eslint_d" },
-			vue = { "eslint_d" },
-		}
+        conform.setup({
+            formatters = {
+                c_formatter_42 = {
+                    command = "c_formatter_42",
+                    stdin = true,
+                },
+            },
+            formatters_by_ft = {
+                lua = { "stylua" },
+                py = { "ruff" },
+                c = { "c_formatter_42" },
+            },
+            format_on_save = function(bufnr)
+                return {
+                    -- never let clangd format C files, c_formatter_42 owns them
+                    lsp_format = vim.bo[bufnr].filetype == "c" and "never" or "fallback",
+                    async = false,
+                    timeout_ms = 2500,
+                }
+            end,
+        })
 
-		local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
-
-		vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
-			group = lint_augroup,
-			callback = function()
-				lint.try_lint()
-			end,
-		})
-
-		vim.keymap.set("n", "<leader>l", function()
-			lint.try_lint()
-		end, { desc = "Trigger linting for current file" })
-	end,
+        vim.keymap.set({ "n", "v" }, "<leader>mp", function()
+            conform.format({
+                lsp_format = vim.bo.filetype == "c" and "never" or "fallback",
+                async = false,
+                timeout_ms = 1000,
+            })
+        end, { desc = "Format file or range (in visual mode)" })
+    end,
 }
