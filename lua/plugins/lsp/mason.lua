@@ -28,6 +28,11 @@ return {
             ensure_installed = {
                 "lua_ls",
             },
+            -- stylua is installed as a formatter (see conform), not as a language
+            -- server, so keep mason-lspconfig from auto-enabling it
+            automatic_enable = {
+                exclude = { "stylua" },
+            },
         })
     end,
 }
